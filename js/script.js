@@ -5,6 +5,7 @@
     var near_dist, far_dist;
     var debug_mode = 0;
     var catch_mode = 0;
+    var game_over = 0;
 
     
 
@@ -18,6 +19,10 @@
 
     var cell_clicked = function(event) {
 
+
+        if(game_over) return;
+        
+
         var co_ord = event.srcElement.getAttribute("id").split("-");
         var x = parseInt(co_ord[0]);
         var y = parseInt(co_ord[1]);
@@ -27,7 +32,7 @@
             if(x == ghostX && y == ghostY) {
                 document.getElementById("catch_ghost").classList.remove("btn-warning");
                 document.getElementById("catch_ghost").classList.add("btn-success");
-                document.getElementById("catch_ghost").innerHTML = "Congrats!!";
+                document.getElementById("catch_ghost").innerHTML = "Ghost Found! ";
                 
                 for(var  i = 0 ; i < rows ; i++ ) {
                     for(var j =0 ; j < cols; j++ ) {
@@ -35,17 +40,20 @@
                     }
                 }
                 board[x][y] = 100.0;
+                game_over = 1;
             }
             else {
                 document.getElementById("catch_ghost").innerHTML = "Nop! Try again.";
                 board[x][y] = 0.0;
             }
         }
+        else {
+            censorX.push(x);
+            censorY.push(y);
+        }
 
 
         var color = get_cell_color(x, y, ghostX, ghostY);
-        censorX.push(x);
-        censorY.push(y);
         update_probabilities(x, y, color);
     }
 
@@ -161,12 +169,20 @@
     var init_table = function() {
         console.log("Creating new table: " +rows + " " + cols);
 
+        game_over = 0;
+        censorX = new Array();
+        censorY = new Array();
+        if(debug_mode) debug();
+        if(catch_mode) catch_ghost();
+
         init_probability();
         init_ghost();
         draw_board();
     }
 
     var advance_time = function(event) {
+
+        if(game_over) return;
 
         censorX = new Array();
         censorY = new Array();
@@ -215,7 +231,13 @@
     }
 
     var catch_ghost = function(event) {
-        console.log("ghost catching Time");
+
+        if(game_over) return;
+
+        censorX = new Array();
+        censorY = new Array();
+        draw_board();
+
         catch_mode ^= 1;
 
         document.getElementById("catch_ghost").innerHTML = "Catch Ghost";
